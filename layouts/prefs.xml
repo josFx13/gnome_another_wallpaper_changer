@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+    <requires lib="gtk" version="4.0"/>
+    <requires lib="adw" version="1.0"/>
+    <object class="AdwPreferencesPage" id="prefs_page">
+        <child>
+            <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Time Interval</property>
+                <child>
+                    <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Hours</property>
+                        <child>
+                            <object class="GtkSpinButton" id="spinbutton_hours">
+                                <property name="valign">center</property>
+                                <property name="numeric">true</property>
+                                <property name="adjustment">
+                                    <object class="GtkAdjustment">
+                                        <property name="lower">0</property>
+                                        <property name="upper">24</property>
+                                        <property name="step-increment">1</property>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+                <child>
+                    <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Minutes</property>
+                        <child>
+                            <object class="GtkSpinButton" id="spinbutton_minutes">
+                                <property name="valign">center</property>
+                                <property name="numeric">true</property>
+                                <property name="adjustment">
+                                    <object class="GtkAdjustment">
+                                        <property name="lower">0</property>
+                                        <property name="upper">59</property>
+                                        <property name="step-increment">1</property>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+                <child>
+                    <object class="AdwActionRow">
+                        <property name="title" translatable="yes">Seconds</property>
+                        <child>
+                            <object class="GtkSpinButton" id="spinbutton_seconds">
+                                <property name="valign">center</property>
+                                <property name="numeric">true</property>
+                                <property name="adjustment">
+                                    <object class="GtkAdjustment">
+                                        <property name="lower">0</property>
+                                        <property name="upper">59</property>
+                                        <property name="step-increment">1</property>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="AdwPreferencesGroup">
+                <property name="title" translatable="yes">Folder Settings</property>
+                <child>
+                    <object class="AdwSwitchRow" id="same_switch">
+                        <property name="title" translatable="yes">Same backgrounds</property>
+                        <property name="subtitle" translatable="yes">Use same folder in Light/Dark mode</property>
+                    </object>
+                </child>
+                <child>
+                    <object class="AdwActionRow" id="folder_light">
+                        <property name="title" translatable="yes">Light Mode Folder</property>
+                        <property name="subtitle" translatable="yes">No folder selected</property>
+                        <property name="activatable">true</property>
+                        <child type="suffix">
+                            <object class="GtkImage">
+                                <property name="icon-name">folder-open-symbolic</property>
+                                <property name="icon-size">1</property>
+                                <property name="halign">center</property>
+                                <property name="margin-end">6</property>
+                            </object>
+                            <!-- <object class="GtkButton" id="button_light">
+                                                <property name="icon-name">folder-open-symbolic</property>
+                                                <property name="valign">center</property>
+                                                <style>
+                                                    <class name="flat"/>
+                                                </style>
+                                            </object> -->
+                        </child>
+                    </object>
+                </child>
+                <child>
+                    <object class="AdwActionRow" id="folder_dark">
+                        <property name="title" translatable="yes">Dark Mode Folder</property>
+                        <property name="subtitle" translatable="yes">No folder selected</property>
+                        <property name="activatable">true</property>
+                        <child type="suffix">
+                            <object class="GtkImage" id="button_dark">
+                                <property name="icon-name">folder-open-symbolic</property>
+                                <property name="valign">center</property>
+                                <property name="halign">center</property>
+                                <property name="margin-end">6</property>
+                                <style>
+                                    <class name="flat"/>
+                                </style>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+            </object>
+        </child>
+
+    </object>
+</interface>

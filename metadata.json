@@ -1,0 +1,16 @@
+{
+    "uuid": "jfx-wallpaperchanger@josfx13.github.com",
+    "name": "Another Wallpaper Changer",
+    "description": "A simple wallpaper changer for GNOME, based on wallpaper-changer@jomik.org. If you find it useful, please consider supporting the project and leave a comment with your feature requests!",
+    "shell-version": [
+        "50^"
+    ],
+    "url": "https://github.com/josFx13/gnome_another_wallpaper_changer",
+    "settings-schema": "org.gnome.shell.extensions.jfx-wallpaperchanger",
+    "version": 1,
+    "version_name": "0.9",
+    "donations": {
+        "paypal": "ocm13jfx",
+        "github": "josFx13"
+    }
+}

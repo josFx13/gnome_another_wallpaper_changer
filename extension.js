@@ -2,18 +2,13 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import St from 'gi://St';
 import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk?version=4.0';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
-// 1. Import the base Extension class
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
-
-// 2. Import your local utils (assuming utils.js exists in your folder)
-// import * as Utils from './utils.js'; 
 
 const TIMER = {
     seconds: 0,
@@ -26,30 +21,19 @@ const TIMER = {
 };
 
 
-// 3. Define your UI Class using GObject.registerClass
 const WallpaperChangerEntry = GObject.registerClass(
     { GTypeName: 'WallpaperChangerEntry' },
     class WallpaperChangerEntry extends PanelMenu.Button {
         _init(extension) {
-            // Use super._init instead of this.parent
             super._init(0.0, 'Wallpaper Changer');
 
             this._extension = extension;
             const settings = this._settings = extension.getSettings();
             this._uisettings = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' })
-            //console.debug(this._settings) 
 
-            TIMER.hours = settings.get_int('hours')
-            TIMER.minutes = settings.get_int('minutes')
-            TIMER.seconds = settings.get_int('seconds')
-
-            this.provider = new FxWallpaper({ 'settings-path': this._getThemeFolderSelected(), 'extension': extension })
-
-            // Setup Icon
             const icon = new St.Icon({ icon_name: 'preferences-desktop-wallpaper-symbolic', style_class: 'system-status-icon' });
             this.add_child(icon);
 
-            // Construct Menu Items
             const prevtItem = new PopupMenu.PopupImageMenuItem('Previous Wallpaper', "media-seek-backward-symbolic", {})
             const nextItem = new PopupMenu.PopupImageMenuItem('Next Wallpaper', "media-seek-forward-symbolic", {})
             const pauseItem = new PopupMenu.PopupImageMenuItem('Pause', "media-playback-pause-symbolic", {});
@@ -61,13 +45,11 @@ const WallpaperChangerEntry = GObject.registerClass(
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addMenuItem(settingsItem);
 
-            // Bind Events (Using Arrow Functions instead of Lang.bind)
-            settingsItem.connect('activate', () => { this._extension.openPreferences() });
+            settingsItem.connect('activate', () => { try { this._extension.openPreferences() } catch (error) { log(error) } })
             prevtItem.connect('activate', () => this._prevWallpaper());
             nextItem.connect('activate', () => this._nextWallpaper());
             pauseItem.connect('activate', () => this._pauseToggle(pauseItem));
 
-            // Connect Settings Signals
             this.settingsIds = [
                 settings.connect('changed::minutes', () => this._applyTimer()),
                 settings.connect('changed::hours', () => this._applyTimer()),
@@ -81,8 +63,8 @@ const WallpaperChangerEntry = GObject.registerClass(
                 this._uisettings.connect('changed::color-scheme', (setts, callerEv) => { this._reload_provider(callerEv) }),
             ]
 
-            // this._applyProvider();
-            this._applyTimer();
+            this.provider = new FxWallpaper({ 'settings-path': this._getThemeFolderSelected(), 'extension': extension })
+            this._applyProvider();
 
         }
         _getThemeFolderSelected() {
@@ -95,7 +77,7 @@ const WallpaperChangerEntry = GObject.registerClass(
             //if (this.provider.foldersource == caller) return
             switch (caller) {
                 case "folder-light":
-                    if (this.provider.foldersource != currentThemeFolder)
+                    if (this.provider.foldersource != currentThemeFolder && TIMER.running)
                         return
 
                     this.provider._applySettings()
@@ -103,7 +85,7 @@ const WallpaperChangerEntry = GObject.registerClass(
 
                     break
                 case "folder-dark":
-                    if (this.provider.foldersource != currentThemeFolder)
+                    if (this.provider.foldersource != currentThemeFolder && TIMER.running)
                         return
 
                     this.provider._applySettings()
@@ -128,7 +110,6 @@ const WallpaperChangerEntry = GObject.registerClass(
 
         _nextWallpaper() {
             console.log('Fetching next wallpaper...');
-            this._resetTimer();
             this.provider.next((p) => { this._setWallpaper(p) });
 
         }
@@ -141,15 +122,10 @@ const WallpaperChangerEntry = GObject.registerClass(
         }
 
         _applyProvider() {
-            //Utils.debug('_applyProvider', this.__name__);
-            //this.provider = Utils.getProvider(this.settings.get_string('provider'));
-            this._nextWallpaper();
-            /* this.provider.connect('wallpapers-changed', (provider) => {
-                if (provider === this.provider) {
-                    //Utils.debug('wallpapers-changed signal received', this.__name__);
-                    this._nextWallpaper();
-                }
-            }); */
+            this._applyTimer()
+            this._nextWallpaper()
+            this._resetTimer()
+
         }
 
         _applyTimer() {
@@ -165,7 +141,7 @@ const WallpaperChangerEntry = GObject.registerClass(
                 this._timerId = null;
             }
 
-            if (TIMER.running && TIMER.toSeconds() > 0) {
+            if (TIMER.running && TIMER.toSeconds() > 0 && this.provider.wallpapers.length > 0) {
                 this._timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, TIMER.toSeconds(), () => {
                     this._nextWallpaper();
                     return GLib.SOURCE_CONTINUE; // Keep timer running
@@ -177,12 +153,14 @@ const WallpaperChangerEntry = GObject.registerClass(
             //Utils.debug('_setWallpaper', this.__name__);
             const background_setting = new Gio.Settings({ schema: 'org.gnome.desktop.background' });
 
-            if (background_setting.is_writable('picture-uri')) {
-                if (background_setting.set_string('picture-uri', 'file://' + path)) { Gio.Settings.sync(); }
-            }
-            if (background_setting.is_writable('picture-uri-dark')) {
-                if (background_setting.set_string('picture-uri-dark', 'file://' + path)) { Gio.Settings.sync(); }
-            }
+            let written = false
+            if (background_setting.is_writable('picture-uri'))
+                written |= background_setting.set_string('picture-uri', 'file://' + path)
+
+            if (background_setting.is_writable('picture-uri-dark'))
+                written |= background_setting.set_string('picture-uri-dark', 'file://' + path)
+
+            Gio.Settings.sync();
         }
 
         destroy() {
@@ -195,7 +173,6 @@ const WallpaperChangerEntry = GObject.registerClass(
     }
 );
 
-// 4. Main Extension Entry Point
 export default class WallpaperExtension extends Extension {
     enable() {
         this._indicator = new WallpaperChangerEntry(this);
@@ -216,14 +193,10 @@ class FxWallpaper {
         this.imagepath = ''
         this['current-wallpaper'] = ''
 
-        // we get path in
         this.foldersource = props["settings-path"];
         this.extension = props.extension; // context
-        //this.settings = props.extension.getSettings();
         this.monitor = null
 
-        //bind to extension settings
-        //this.extension.getSettings().connect('changed', () => { this._applySettings() });
         this._applySettings();
     }
 
@@ -240,19 +213,39 @@ class FxWallpaper {
         console.log('setup wallpaper dir path', this.imagepath)
 
         if (sfolder.query_exists(null)) {
-            this.monitor = sfolder.monitor_directory(Gio.FileMonitorFlags.NONE, null)
-            this.monitor.connect('changed', () => { this._wallpapersChanged() });
+            this.monitor = sfolder.monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, null)
+            this.monitor.connect('changed', (_fileMonitor, file, otherFile, eventType) => {
+                log({ _fileMonitor, file, otherFile, eventType })
+                log(Gio.FileMonitorEvent.CHANGED, Gio.FileMonitorEvent.MOVED_OUT, Gio.FileMonitorEvent.MOVED_IN)
+
+
+                switch (eventType) {
+                    case Gio.FileMonitorEvent.DELETED:
+                        if (!!this.monitor) {
+                            this.monitor.cancel()
+                            this.monitor = null
+                        }
+                        this.wallpapers = []
+
+                        break;
+                    case Gio.FileMonitorEvent.CREATED:
+
+                        break;
+
+                    case Gio.FileMonitorEvent.CHANGED:
+                    case Gio.FileMonitorEvent.MOVED_IN:
+                    case Gio.FileMonitorEvent.MOVED_OUT:
+                        //console.log(`${otherFile.get_basename()} was moved of the directory`);
+                        this.wallpapers = this._listImageFiles(this.imagepath)
+                        break;
+                }
+
+                log("new wallpapers", this.wallpapers)
+            });
             this.wallpapers = this._listImageFiles(this.imagepath)
             console.log(this.wallpapers)
         }
 
-    }
-
-    _wallpapersChanged() {
-        if (!this.dir.query_exists(null) && !!this.monitor) {
-            monitor.cancel();
-            throw new Error('No directory : ' + this.dir.get_path());
-        }
     }
 
     _listImageFiles(xpath) {

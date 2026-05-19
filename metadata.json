@@ -3,12 +3,12 @@
     "name": "Another Wallpaper Changer",
     "description": "A simple wallpaper changer for GNOME, based on wallpaper-changer@jomik.org. If you find it useful, please consider supporting the project and leave a comment with your feature requests!",
     "shell-version": [
-        "50^"
+        "50"
     ],
     "url": "https://github.com/josFx13/gnome_another_wallpaper_changer",
     "settings-schema": "org.gnome.shell.extensions.jfx-wallpaperchanger",
-    "version": 1,
-    "version_name": "0.9",
+    "version": 2,
+    "version_name": "1",
     "donations": {
         "paypal": "ocm13jfx",
         "github": "josFx13"

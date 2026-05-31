@@ -52,7 +52,7 @@ export default class CustomPreferences extends ExtensionPreferences {
                     const file = source.select_folder_finish(res)
                     if (file) {
                         const path = file.get_path()
-                        console.log('selection', path);
+                        // console.log('selection', path);
                         settings.set_string('folder-light', path);
                         if (sameSwitch.active)
                             settings.set_string('folder-dark', path);
@@ -62,7 +62,7 @@ export default class CustomPreferences extends ExtensionPreferences {
 
             } catch (err) {
                 // Handle cancellation or errors (e.g., Gtk.DialogError.CANCELLED)
-                console.log('Folder selection cancelled or failed', err);
+                // console.log('Folder selection cancelled or failed', err);
             }
         })
 
@@ -75,13 +75,12 @@ export default class CustomPreferences extends ExtensionPreferences {
                     const file = source.select_folder_finish(res)
                     if (file) {
                         const path = file.get_path()
-                        console.log('selection', path);
                         settings.set_string('folder-dark', path);
                     }
                 });
 
             } catch (err) {
-                console.log('Folder selection cancelled or failed', err);
+                //  console.log('Folder selection cancelled or failed', err);
             }
         })
     }
@@ -105,15 +104,4 @@ export default class CustomPreferences extends ExtensionPreferences {
         
     }
 
-    openLink(url) {
-        const launcher = new Gtk.UriLauncher({ uri: url });
-        launcher.launch(null, null, (source, result) => {
-            try {
-                source.launch_finish(result);
-                console.log(`Successfully opened: ${url}`);
-            } catch (e) {
-                console.error(`Failed to open link: ${e.message}`);
-            }
-        });
-    }
 }

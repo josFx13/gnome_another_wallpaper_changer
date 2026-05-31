@@ -45,7 +45,11 @@ const WallpaperChangerEntry = GObject.registerClass(
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addMenuItem(settingsItem);
 
-            settingsItem.connect('activate', () => { try { this._extension.openPreferences() } catch (error) { log(error) } })
+            settingsItem.connect('activate', () => {
+                try { this._extension.openPreferences() } catch (error) {
+                    //log(error)
+                }
+            })
             prevtItem.connect('activate', () => this._prevWallpaper());
             nextItem.connect('activate', () => this._nextWallpaper());
             pauseItem.connect('activate', () => this._pauseToggle(pauseItem));
@@ -73,7 +77,7 @@ const WallpaperChangerEntry = GObject.registerClass(
 
         _reload_provider(caller) {
             let currentThemeFolder = this._getThemeFolderSelected()
-            console.log('Event', caller)
+            // console.log('Event', caller)
             //if (this.provider.foldersource == caller) return
             switch (caller) {
                 case "folder-light":
@@ -103,13 +107,13 @@ const WallpaperChangerEntry = GObject.registerClass(
         }
 
         _prevWallpaper() {
-            console.log('Fetching previuos wallpaper...');
+            // console.log('Fetching previuos wallpaper...');
             this._resetTimer();
             this.provider.previous((p) => { this._setWallpaper(p) });
         }
 
         _nextWallpaper() {
-            console.log('Fetching next wallpaper...');
+            // console.log('Fetching next wallpaper...');
             this.provider.next((p) => { this._setWallpaper(p) });
 
         }
@@ -150,7 +154,7 @@ const WallpaperChangerEntry = GObject.registerClass(
         }
 
         _setWallpaper(path) {
-            //Utils.debug('_setWallpaper', this.__name__);
+
             const background_setting = new Gio.Settings({ schema: 'org.gnome.desktop.background' });
 
             let written = false
@@ -206,25 +210,31 @@ class FxWallpaper {
         this._setupWallpaperDir()
     }
 
+    _setRandomStart() {
+
+        let max = this.wallpapers.length
+        let min = 0
+        let randomStart = Math.floor(Math.random() * (max - min + 1)) + min
+        this.set(this.wallpapers[randomStart])
+        //console.log("============",randomStart, this.get())
+    }
+
     _setupWallpaperDir() {
         this.imagepath = this.extension.getSettings().get_string(this.foldersource)
         this.destroyMonitor()
         const sfolder = Gio.File.new_for_path(this.imagepath)
-        console.log('setup wallpaper dir path', this.imagepath)
+        // console.log('setup wallpaper dir path', this.imagepath)
 
         if (sfolder.query_exists(null)) {
             this.monitor = sfolder.monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, null)
-            this.monitor.connect('changed', (_fileMonitor, file, otherFile, eventType) => {
-                log({ _fileMonitor, file, otherFile, eventType })
-                log(Gio.FileMonitorEvent.CHANGED, Gio.FileMonitorEvent.MOVED_OUT, Gio.FileMonitorEvent.MOVED_IN)
 
+            this.monitorEvId = this.monitor.connect('changed', (_fileMonitor, file, otherFile, eventType) => {
+                // log({ _fileMonitor, file, otherFile, eventType })
+                // log(Gio.FileMonitorEvent.CHANGED, Gio.FileMonitorEvent.MOVED_OUT, Gio.FileMonitorEvent.MOVED_IN, Gio.FileMonitorEvent.)
 
                 switch (eventType) {
                     case Gio.FileMonitorEvent.DELETED:
-                        if (!!this.monitor) {
-                            this.monitor.cancel()
-                            this.monitor = null
-                        }
+                        this.destroyMonitor()
                         this.wallpapers = []
 
                         break;
@@ -239,14 +249,14 @@ class FxWallpaper {
                         this.wallpapers = this._listImageFiles(this.imagepath)
                         break;
                 }
-
-                log("new wallpapers", this.wallpapers)
             });
             this.wallpapers = this._listImageFiles(this.imagepath)
-            console.log(this.wallpapers)
+            this._setRandomStart()
+            // console.log(this.wallpapers)
         }
 
     }
+
 
     _listImageFiles(xpath) {
         let images = []
@@ -297,8 +307,13 @@ class FxWallpaper {
 
 
     destroyMonitor() {
-        if (this.monitor) // when path changes
+        if (this.monitor) {
+            if (!!this.monitorEvId) {
+                this.monitor.disconnect(this.monitorEvId)
+                this.monitorEvId = null
+            }
             this.monitor.cancel()
+        }
 
     }
 

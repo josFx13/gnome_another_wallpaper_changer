@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<schemalist gettext-domain="gnome-shell-extensions">
+  <schema id="org.gnome.shell.extensions.jfx-wallpaperchanger" path="/org/gnome/shell/extensions/jfx-wallpaperchanger/">
+
+    <key name="minutes" type="i">
+      <default>0</default>
+      <summary>Time between wallpaper changes in minutes</summary>
+      <description>How many minutes to wait before changing wallpaper</description>
+      <range min="0" max="59"/>
+    </key>
+
+    <key name="hours" type="i">
+      <default>1</default>
+      <summary>Time between wallpaper changes in hours</summary>
+      <description>How many hours to wait before changing wallpaper</description>
+      <range min="0" max="24"/>
+    </key>
+    <key name="seconds" type="i">
+      <default>0</default>
+      <summary>Time between wallpaper changes in hours</summary>
+      <description>How many hours to wait before changing wallpaper</description>
+      <range min="0" max="59"/>
+    </key>
+
+    <key name="provider" type="s">
+      <default>"Folder"</default>
+      <summary>Provider to use</summary>
+      <description>The provider implementation to query for new wallpapers</description>
+    </key>
+    <key name="folder-light" type="s">
+      <default>""</default>
+      <summary>Light folder path</summary>
+      <description>Backgrounds path for light theme</description>
+    </key>
+    <key name="folder-dark" type="s">
+      <default>""</default>
+      <summary>Dark folder path</summary>
+      <description>Backgrounds path for dark theme</description>
+    </key>
+
+    <key name="same-folder" type="b">
+      <default>true</default>
+      <summary>Use same path for both light and dark theme</summary>
+      <description></description>
+    </key>
+    <key name="debug" type="b">
+      <default>false</default>
+      <summary>Enable debugging</summary>
+      <description></description>
+    </key>
+  </schema>
+</schemalist>
